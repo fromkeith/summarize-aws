@@ -1,0 +1,82 @@
+doctype html
+html
+    head
+        link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css")
+        script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js")
+        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js")
+
+    body
+        each val in results
+            if val.type == 'swf.listClosed'
+                .container
+                    h3 Swf - List Closed
+                    p Between #{val.start} and #{val.end}
+                    table.table.table-striped
+                        tr
+                            th Name
+                            th Completed
+                            th Canceled
+                            th Terminated
+                            th Failed
+                            th TimedOut
+                            th ContainedAsNew
+                        each wtv, wtk in val.data.workflows
+                            tr
+                                td #{wtk}
+                                td #{wtv.completed}
+                                td #{wtv.canceled}
+                                td #{wtv.terminated}
+                                td #{wtv.failed}
+                                td #{wtv.timed_out}
+                                td #{wtv.continued_as_new}
+                        tr
+                            td
+                                b Total
+                            td #{val.data.completed}
+                            td #{val.data.canceled}
+                            td #{val.data.terminated}
+                            td #{val.data.failed}
+                            td #{val.data.timed_out}
+                            td #{val.data.continued_as_new}
+            if val.type == 'sqs.summary'
+                .container
+                    h3 SQS - Summary
+                    p Between #{val.start} and #{val.end}
+                    table.table.table-striped
+                        th QueueName
+                        each qm in val.data.metricNames
+                            th #{qm}
+                        each queueM, queueName in val.data.categories
+                            tr
+                                td #{queueName}
+                                each qm in val.data.metricNames
+                                    td #{queueM[qm]}
+            if val.type == 'elb.summary'
+                .container
+                    h3 ELB - Summary
+                    p Between #{val.start} and #{val.end}
+                    table.table.table-striped
+                        th Name
+                        th Zone
+                        each qm in val.data.metricNames
+                            th #{qm}
+                        each elb in val.data.categories
+                            tr
+                                td #{elb.ElbName}
+                                td #{elb.AvailabilityZone}
+                                each qm in val.data.metricNames
+                                    td #{elb[qm]}
+            if val.type == 'cw.custom'
+                .container
+                    h3 CW - #{val.groupName}
+                    p Between #{val.start} and #{val.end}
+                    table.table.table-striped
+                        th Name
+                        each qm in val.data.metricNames
+                            th #{qm}
+                        each cw in val.data.categories
+                            tr
+                                td #{cw.Name}
+                                each qm in val.data.metricNames
+                                    td #{cw[qm]}
+
