@@ -48,7 +48,7 @@ function summarizeSqsViaCloudwatch(tz, sqsConfig) {
                 },
                 function createCategory(met) {
                     return {};
-                });
+                }, sqsConfig.nameFormatter);
             summedResult.done(function (res) {
                 finalRes.resolve([res]);
             });
