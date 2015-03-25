@@ -41,7 +41,6 @@ var AWS = require("aws-sdk"),
                     };
                 for (i = 0; i < points.length; i++) {
                     pointTime = moment(points[i].Timestamp).format("X") * 1;
-                    console.log(points[i]);
                     if (pointTime < start) {
                         continue;
                     }
