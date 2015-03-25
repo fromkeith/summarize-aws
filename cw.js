@@ -36,18 +36,15 @@ var AWS = require("aws-sdk"),
                 });
             },
             function getMetrics(metricList, done) {
-                cwHelper.getMetrics(cw, cwConfig.timeRange, cwConfig.metricPeriod, metricList.Metrics).done(function (data) {
-                    done(null, metricList, data);
+                cwHelper.getMetrics(cw, cwConfig.timeRange, cwConfig.metricPeriod, metricList.Metrics, cwConfig).done(function (data) {
+                    done(null, data);
                 }, function (err) {
                     done(err);
                 });
             },
-            function sumResults(metricList, data, done) {
+            function sumResults(data, done) {
                 var summedResult;
-                summedResult = cwHelper.summarize('cw.custom', cwConfig.timeRange, metricList.Metrics, data,
-                    cwConfig.getMetricCategory,
-                    cwConfig.createCategory,
-                    cwConfig.nameFormatter);
+                summedResult = cwHelper.summarize('cw.custom', cwConfig.timeRange, data, cwConfig);
                 summedResult.done(function (res) {
                     res.groupName = cwConfig.groupName;
                     done(null, [res]);

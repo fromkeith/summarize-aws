@@ -6,6 +6,22 @@ html
         script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js")
 
     body
+        mixin cwCols(cw, val)
+            each qm in val.data.metricNames
+                td
+                    if cw[qm]
+                        each itemValue in cw[qm]
+                            div #{itemValue.val}
+                                if cw[qm].length > 1
+                                    | 
+                                    span #{itemValue.type}
+        mixin cwRows(val)
+            each cwK in val.data.sorted
+                - cw = val.data.categories[cwK]
+                tr
+                    td #{cw.Name}
+                    +cwCols(cw, val)
+
         each val in results
             if val.type == 'ses.sendStat'
                 .container
@@ -18,10 +34,10 @@ html
                             th Bounces
                             th Complaints
                         tr
-                            th #{val.deliveryAttempts}
-                            th #{val.rejects}
-                            th #{val.bounces}
-                            th #{val.complaints}
+                            td #{val.deliveryAttempts}
+                            td #{val.rejects}
+                            td #{val.bounces}
+                            td #{val.complaints}
             if val.type == 'swf.listClosed'
                 .container
                     h3 Swf - List Closed
@@ -61,11 +77,7 @@ html
                         th QueueName
                         each qm in val.data.metricNames
                             th #{qm}
-                        each queueM, queueName in val.data.categories
-                            tr
-                                td #{queueName}
-                                each qm in val.data.metricNames
-                                    td #{queueM[qm]}
+                        +cwRows(val)
             if val.type == 'elb.summary'
                 .container
                     h3 ELB - Summary
@@ -75,12 +87,12 @@ html
                         th Zone
                         each qm in val.data.metricNames
                             th #{qm}
-                        each elb in val.data.categories
+                        each cwK in val.data.sorted
+                            - elb = val.data.categories[cwK]
                             tr
                                 td #{elb.ElbName}
                                 td #{elb.AvailabilityZone}
-                                each qm in val.data.metricNames
-                                    td #{elb[qm]}
+                                +cwCols(elb, val)
             if val.type == 'cw.custom'
                 .container
                     h3 CW - #{val.groupName}
@@ -89,9 +101,5 @@ html
                         th Name
                         each qm in val.data.metricNames
                             th #{qm}
-                        each cw in val.data.categories
-                            tr
-                                td #{cw.Name}
-                                each qm in val.data.metricNames
-                                    td #{cw[qm]}
+                        +cwRows(val)
 

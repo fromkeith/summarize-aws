@@ -41,15 +41,18 @@ var AWS = require("aws-sdk"),
 
         cwbased.getListOfMetrics(cw, params, queueNameFilter, tz).done(function (metricList) {
 
-            cwHelper.getMetrics(cw, sqsConfig.timeRange, sqsConfig.metricPeriod, metricList.Metrics).done(function (data) {
+            cwHelper.getMetrics(cw, sqsConfig.timeRange, sqsConfig.metricPeriod, metricList.Metrics, {}).done(function (data) {
                 var summedResult;
-                summedResult = cwHelper.summarize('sqs.summary', sqsConfig.timeRange, metricList.Metrics, data,
-                    function getMetricCategory(met) {
-                        return met.Dimensions[0].Value;
-                    },
-                    function createCategory(met) {
-                        return {};
-                    }, sqsConfig.nameFormatter);
+                summedResult = cwHelper.summarize('sqs.summary', sqsConfig.timeRange, data,
+                    {
+                        getMetricCategory: function (met) {
+                            return met.Dimensions[0].Value;
+                        },
+                        createCategory: function (met) {
+                            return {Name: met.Dimensions[0].Value};
+                        },
+                        nameFormatter: sqsConfig.nameFormatter
+                    });
                 summedResult.done(function (res) {
                     finalRes.resolve([res]);
                 });

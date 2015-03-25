@@ -61,7 +61,7 @@ var AWS = require("aws-sdk"),
 
         cwbased.getListOfMetrics(cw, params, elbNameFilter, tz).done(function (metricList) {
 
-            cwHelper.getMetrics(cw, elbConfig.timeRange, elbConfig.metricPeriod, metricList.Metrics).done(function (data) {
+            cwHelper.getMetrics(cw, elbConfig.timeRange, elbConfig.metricPeriod, metricList.Metrics, {}).done(function (data) {
                 var summedResult;
                 function extractNameZone(met) {
                     var j, ret = {};
@@ -77,18 +77,21 @@ var AWS = require("aws-sdk"),
                     }
                     return ret;
                 }
-                summedResult = cwHelper.summarize('elb.summary', elbConfig.timeRange, metricList.Metrics, data,
-                    function getMetricCategory(met) {
-                        var ret = extractNameZone(met);
-                        return ret.ElbName + "z" + ret.AvailabilityZone;
-                    },
-                    function createCategory(met) {
-                        var ret = extractNameZone(met);
-                        return {
-                            ElbName: ret.ElbName,
-                            AvailabilityZone: ret.AvailabilityZone
-                        };
-                    }, elbConfig.nameFormatter);
+                summedResult = cwHelper.summarize('elb.summary', elbConfig.timeRange, data,
+                    {
+                        getMetricCategory: function (met) {
+                            var ret = extractNameZone(met);
+                            return ret.ElbName + "z" + ret.AvailabilityZone;
+                        },
+                        createCategory: function (met) {
+                            var ret = extractNameZone(met);
+                            return {
+                                ElbName: ret.ElbName,
+                                AvailabilityZone: ret.AvailabilityZone
+                            };
+                        },
+                        nameFormatter: elbConfig.nameFormatter
+                    });
                 summedResult.done(function (res) {
                     finalRes.resolve([res]);
                 });
