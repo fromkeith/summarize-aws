@@ -7,6 +7,21 @@ html
 
     body
         each val in results
+            if val.type == 'ses.sendStat'
+                .container
+                    h3 SES - Send Statistics
+                    p Between #{val.start} and #{val.end}
+                    table.table.table-striped
+                        tr
+                            th DeliveryAttempts
+                            th Rejects
+                            th Bounces
+                            th Complaints
+                        tr
+                            th #{val.deliveryAttempts}
+                            th #{val.rejects}
+                            th #{val.bounces}
+                            th #{val.complaints}
             if val.type == 'swf.listClosed'
                 .container
                     h3 Swf - List Closed

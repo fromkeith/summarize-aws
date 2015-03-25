@@ -185,7 +185,22 @@ Cloudwatch Config
     }
 ```
 
-
+SES
+```javascript
+    SES: [
+        {
+            start: {
+                at: "00:00:00", // go to 00:00:00 today
+                offset: '-1d'   // then go back 1 day
+            },
+            end: {
+                at: "00:00:00", // go to 00:00:00 today
+                offset: '0d'   // leave it there
+            },
+            region: "us-east-1"
+        }
+    ]
+```
 
 
 

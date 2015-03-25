@@ -159,6 +159,9 @@ var utils = require("./utils"),
                     checkDone();
                 };
             }
+            if (metrics.length === 0) {
+                result.resolve({});
+            }
             for (i = 0; i < metrics.length; i++) {
                 retrieveMetricsForRange(cw, timeRange, {
                     MetricName: metrics[i].MetricName,

@@ -1,6 +1,7 @@
 var AWS = require("aws-sdk"),
-        deferred = require('deferred'),
-        cwbased = require("./cwbased");
+    deferred = require('deferred'),
+    async = require("async"),
+    cwbased = require("./cwbased");
 
 (function () {
     "use strict";
@@ -11,6 +12,9 @@ var AWS = require("aws-sdk"),
             },
             finalRes = deferred(),
             cwHelper = new cwbased.CloudWatchBased(tz);
+        if (cwConfig.region !== undefined) {
+            cw = new AWS.CloudWatch({region: cwConfig.region});
+        }
 
         function metricNameFilter(metric) {
             if (metric.MetricName.match(cwConfig.metricNameRegex) !== null) {
@@ -23,23 +27,40 @@ var AWS = require("aws-sdk"),
             params.Dimensions = cwConfig.dimensions;
         }
 
-        cwbased.getListOfMetrics(cw, params, metricNameFilter, tz).done(function (metricList) {
-            cwHelper.getMetrics(cw, cwConfig.timeRange, cwConfig.metricPeriod, metricList.Metrics).done(function (data) {
+        async.waterfall([
+            function getList(done) {
+                cwbased.getListOfMetrics(cw, params, metricNameFilter, tz).done(function (metricList) {
+                    done(null, metricList);
+                }, function (err) {
+                    done(err);
+                });
+            },
+            function getMetrics(metricList, done) {
+                cwHelper.getMetrics(cw, cwConfig.timeRange, cwConfig.metricPeriod, metricList.Metrics).done(function (data) {
+                    done(null, metricList, data);
+                }, function (err) {
+                    done(err);
+                });
+            },
+            function sumResults(metricList, data, done) {
                 var summedResult;
-
                 summedResult = cwHelper.summarize('cw.custom', cwConfig.timeRange, metricList.Metrics, data,
                     cwConfig.getMetricCategory,
                     cwConfig.createCategory,
                     cwConfig.nameFormatter);
                 summedResult.done(function (res) {
                     res.groupName = cwConfig.groupName;
-                    finalRes.resolve([res]);
+                    done(null, [res]);
+                }, function (err) {
+                    done(err);
                 });
-            }, function (err) {
+            }
+        ], function (err, result) {
+            if (err) {
                 finalRes.reject(err);
-            });
-        }, function (err) {
-            finalRes.reject(err);
+                return;
+            }
+            finalRes.resolve(result);
         });
 
         return finalRes.promise;
